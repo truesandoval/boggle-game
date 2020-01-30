@@ -1,26 +1,53 @@
 import React from 'react';
-// import logo from './logo.svg';
+import Dictionary from './components/HideBoard';
 import './App.css';
-import Grid from './components/grid';
+import Board from './components/grid';
+import UserGuess from './components/UserGuess';
+import TextField from './components/TextField';
+import RandomGrid from './components/randomGrid';
+import NestedGrid from './components/grid';
+import HideBoard from "./components/HideBoard";
+import createBreakpoints from '@material-ui/core/styles/createBreakpoints';
+// import BuildDict from './components/BuildDict';
 
+class LoggingButton extends React.Component {
+  // This syntax ensures `this` is bound within handleClick.
+  // Warning: this is *experimental* syntax.
+  handleClick = () => {
+    console.log('this is:', this);
+  }
+
+  render() {
+    return (
+      <button onClick={(e) => this.handleClick(e)}>
+        Hide Board
+      </button>
+    );
+  }
+}
+
+let board = RandomGrid();
 
 function App() {
   return (
     <div className="App">
       <header className="App-header">
-        {/* <img src={logo} className="App-logo" alt="logo" /> */}
-        <p>
-          Boggle 
-        </p>
-        <Grid>
-        </Grid>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
+      <img className="App-logo"src={require("./components/boggle.png")} />
+     
+     {/* <HideBoard>
+
+     </HideBoard> */}
+
+        {NestedGrid(board)}
+<br>
+</br>
+        <LoggingButton></LoggingButton>
+        <TextField>
+
+        </TextField>
+    
+        <a>
+        <UserGuess promptText="Check Valid Word"/>
         </a>
       </header>
     </div>

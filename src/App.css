@@ -3,28 +3,11 @@
 }
 
 .App-logo {
-  height: 40vmin;
+  height: 30vmin;
   pointer-events: none;
+  margin-bottom: 50px;
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
-}
-.App-container{
-  height: 90vh;
-  margin: 2rem;
-  display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
-  grid-template-rows: 1fr 1fr 1fr;
-}
-.App-cell{
-  color: white;
-  font-size: 3rem;
-  text-align: center;
-  padding: 4rem;
-}
 .App-header {
   background-color: #a5ebdf;
   min-height: 100vh;

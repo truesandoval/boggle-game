@@ -1,100 +1,93 @@
+//from Krista's GitHub
+function TrieNode(character) {
+  this.character = character;
+  this.parent = null;
+  this.children = {};
+  this.isWord = false;
+}
 
-function boggle_solver(grid, dict){
-    var newTrie = dictTrie(dict);
-    var solutions = gridSolutions(grid, newTrie, isVisited(grid));
-    return solutions;
+// Returns the word corresponding to this node.
+TrieNode.prototype.asFullWord = function() {
+  var output = [];
+  var node = this;
+  while (node !== null) {
+    output.push(node.character);
+    node = node.parent;
+  }
+
+  output.reverse();
+  return output.join('');
 };
-var TrieNode = function() {
-      this.keys = new Map();
-      this.end = false;
-      this.setEnd = function() {
-          this.end = true;
-      };
-      this.isEnd = function() {
-          return this.end;
-      };
-  };
-var MakeTrie = function(){
-    this.root = new TrieNode();
-      this.add = function(input, node = this.root){
-      if(input.length === 0){
-        node.setEnd();
-        return;
-      }
-      else if(!node.keys.has(input[0])){
-        node.keys.set(input[0], new TrieNode());
-        return this.add(input.substr(1), node.keys.get(input[0]));
-      }
-      else{
-        return this.add(input.substr(1), node.keys.get(input[0]));
-      }
-    };
-    this.isValidWord = function(word){
-      let node = this.root;
-      while(word.length > 1)
-        if(!node.keys.has(word[0]))
-        return false;
-        else{
-          node = node.keys.get(word[0]);
-          word = word.substr(1);
-        }
-      return (node.keys.has(word) && node.keys.get(word).isEnd()) ? true : false;
-    };
-  };
-  function dictTrie(dict){
-    var newTrie = new MakeTrie();
-    for(var i = 0; i < dict.length; i++)
-        if(dict[i].length >= 3)
-          newTrie.add(dict[i]);
-    return newTrie;
-  };
-  function isVisited(grid){
-    var visited = [];
-    var temp = [];
-    for(var i = 0;i<grid.length;i++){
-      for(var x = 0; x<grid[0].length;x++){
-        temp.push(false);
-      }
-      visited.push(temp);
-      temp = [];
-    }
-    return visited;
-  };
-  function recursivelyTraverseGrid(newTrie, row, col, grid, visited, solutions, newString){
-      //check to see if the coordinates are in bound and unvisited
-    if(row<0||col<0||row >= grid.length||col >= grid[0].length|| visited[row][col])
-      return;
-    newString += grid[row][col];
-    if(newTrie.isValidWord(newString))
-      solutions.push(newString);
-    visited[row][col]=true;
-    recursivelyTraverseGrid(newTrie, row-1, col, grid, visited, solutions, newString);
-    recursivelyTraverseGrid(newTrie, row+1, col, grid, visited, solutions, newString);
-    recursivelyTraverseGrid(newTrie, row, col+1, grid, visited, solutions, newString);
-    recursivelyTraverseGrid(newTrie, row, col-1, grid, visited, solutions, newString);
-    recursivelyTraverseGrid(newTrie, row-1, col+1, grid, visited, solutions, newString);
-    recursivelyTraverseGrid(newTrie, row+1, col+1, grid, visited, solutions, newString);
-    recursivelyTraverseGrid(newTrie, row-1, col-1, grid, visited, solutions, newString);
-    recursivelyTraverseGrid(newTrie, row+1, col-1,  grid, visited, solutions, newString);
-    visited[row][col] = false;
-  };
-  
-  function gridSolutions(grid, newTrie, visited){
-    var solutions = [];
-    var newString = "";
-    for(var i = 0; i < grid.length;i++){
-        for(var x = 0; x < grid[0].length;x++){
-            recursivelyTraverseGrid(newTrie, i, x, grid, visited, solutions,"");
-        }
-    }
-    const uniqueSolutions = Array.from(new Set(solutions));
-    return uniqueSolutions;
-  };
 
-  exports.findAllSolutions = boggle_solver;
-//   var dict = ["ARE", "BLISS", "LOVE", "DIE"];
-//   var grid = [["A", "R", "C", "L"], 
-//               ["E", "D", "S", "O"], 
-//               ["I", "J", "I", "V"], 
-//               ["D", "B", "L", "E"]];
-//   console.log(boggle_solver(grid,dict));
+function trieInsert(root, word) {
+    let node = root;
+    for (let i = 0; i < word.length; ++i) {
+	let c = word[i];
+	// If 'Q' is the final letter, word[i+1] is undefined
+	if (c == 'Q' && word[i + 1] == 'U') {
+	    c = 'QU';
+	    i = i + 1;
+	}
+	if (node.children[c] == undefined) {
+	    node.children[c] = new TrieNode(c);
+	    node.children[c].parent = node;
+	}
+	 node = node.children[c];
+  }
+  node.isWord = true;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// The solver itself. We use a helper struct, to simplify argument passing.
+
+function Solver(dict, grid) {
+    this.trieRoot = new TrieNode();
+    for (let word of dict) {
+	trieInsert(this.trieRoot, word);
+    }
+    this.grid = grid;
+    this.solutions = new Set();
+}
+
+Solver.prototype.solve = function() {
+  for (let row = 0; row < this.grid.length; ++row) {
+    for (let col = 0; col < this.grid[0].length; ++col) {
+      this.recursiveSolve(row, col, this.trieRoot);
+    }
+  }
+};
+
+Solver.prototype.recursiveSolve = function(row, col, parentNode) {
+  if (row < 0 || row >= this.grid.length || col < 0 || col >= this.grid[0].length) return;
+
+  const currentTile = this.grid[row][col];
+  const currentNode = parentNode.children[currentTile];
+  if (currentNode == undefined) return;  // '==' matches null or undef
+  console.log("currentNode");
+  console.log(currentNode);
+
+  if (currentNode.isWord) {
+    this.solutions.add(currentNode.asFullWord());
+  }
+  this.grid[row][col] = '.';  // Mark the cell, so we don't repeat it.
+
+  for (let dx = -1; dx < 2; ++dx) {
+    for (let dy = -1; dy < 2; ++dy) {
+      this.recursiveSolve(row + dx, col + dy, currentNode);
+    }
+  }
+
+  this.grid[row][col] = currentTile;  // Unmark the cell.
+};
+
+////////////////////////////////////////////////////////////////////////////////
+// The public API
+
+function findAllSolutions(grid, dict) {
+  console.log("findAllSolutions");
+  let solver = new Solver(dict, grid);
+  solver.solve();
+  return [...solver.solutions];
+}
+
+export default findAllSolutions;
